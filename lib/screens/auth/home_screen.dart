@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../data/mock_data.dart';
-import '../config/app_routes.dart';
+import '../../data/mock_data.dart';
+import '../../config/app_routes.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
