@@ -2,7 +2,7 @@ class Usuario {
   final int id;
   final String nombre;
   final String correo;
-  final String contrasena;
+  String contrasena;
   final String rol; // "distribuidor" o "administrador"
   final String foto;
 

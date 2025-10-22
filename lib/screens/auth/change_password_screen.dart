@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../config/app_routes.dart';
-import '../../data/mock_data.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:myapp/services/auth_service.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -10,64 +11,74 @@ class ChangePasswordScreen extends StatefulWidget {
 }
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
-  String nueva = '', confirmar = '';
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
-  bool get isComplete => nueva.isNotEmpty && confirmar.isNotEmpty;
-
-  void _guardar() {
-    if (nueva != confirmar) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Las contraseñas no coinciden')),
-      );
-      return;
-    }
-    final ok = MockDataService.cambiarContrasena(nueva);
-    if (ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Contraseña actualizada con éxito')),
-      );
-      Navigator.pushReplacementNamed(context, AppRoutes.login);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al actualizar contraseña')),
-      );
+  Future<void> _changePassword() async {
+    if (_formKey.currentState!.validate()) {
+      if (_newPasswordController.text != _confirmPasswordController.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Las contraseñas no coinciden')),
+        );
+        return;
+      }
+      setState(() {
+        _isLoading = true;
+      });
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final success = await authService.changePassword(_newPasswordController.text);
+      setState(() {
+        _isLoading = false;
+      });
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Contraseña actualizada con éxito')),
+        );
+        context.go('/login');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al actualizar contraseña')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 40),
-        child: Column(
-          children: [
-            const Text(
-              'Cambiar contraseña',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-            buildTextField('Nueva contraseña', (v) => nueva = v),
-            buildTextField('Confirmar contraseña', (v) => confirmar = v),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: isComplete ? _guardar : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isComplete ? Colors.blue : Colors.grey,
+      appBar: AppBar(title: const Text('Cambiar contraseña')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _newPasswordController,
+                decoration: const InputDecoration(labelText: 'Nueva contraseña'),
+                obscureText: true,
+                validator: (value) =>
+                    value!.isEmpty ? 'Please enter a new password' : null,
               ),
-              child: const Text('Guardar cambios'),
-            ),
-          ],
+              TextFormField(
+                controller: _confirmPasswordController,
+                decoration: const InputDecoration(labelText: 'Confirmar contraseña'),
+                obscureText: true,
+                validator: (value) =>
+                    value!.isEmpty ? 'Please confirm your new password' : null,
+              ),
+              const SizedBox(height: 20),
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: _changePassword,
+                      child: const Text('Guardar cambios'),
+                    ),
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget buildTextField(String label, Function(String) onChanged) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: TextFormField(
-        obscureText: true,
-        decoration: InputDecoration(labelText: label),
-        onChanged: (v) => setState(() => onChanged(v)),
       ),
     );
   }

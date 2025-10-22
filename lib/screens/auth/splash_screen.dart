@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../config/app_routes.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:myapp/services/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -12,19 +14,24 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, AppRoutes.login);
-    });
+    _checkSession();
+  }
+
+  Future<void> _checkSession() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    await Future.delayed(const Duration(seconds: 2));
+    if (authService.isAuthenticated) {
+      context.go('/home');
+    } else {
+      context.go('/login');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: Text(
-          'Stock Point',
-          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-        ),
+        child: CircularProgressIndicator(),
       ),
     );
   }

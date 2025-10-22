@@ -1,26 +1,31 @@
 import 'package:flutter/material.dart';
-import 'config/app_routes.dart';
+import 'package:provider/provider.dart';
+import 'package:myapp/config/app_routes.dart';
+import 'package:myapp/services/auth_service.dart';
 
 void main() {
-  runApp(const StockPointApp());
+  runApp(const MyApp());
 }
 
-class StockPointApp extends StatelessWidget {
-  const StockPointApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Stock Point',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.white,
+    return ChangeNotifierProvider(
+      create: (_) => AuthService(),
+      child: Consumer<AuthService>(
+        builder: (context, authService, child) {
+          final router = AppRoutes.getRouter(authService);
+          return MaterialApp.router(
+            routerConfig: router,
+            title: 'Stock Point',
+            theme: ThemeData(
+              primarySwatch: Colors.blue,
+            ),
+          );
+        },
       ),
-      
-      initialRoute: AppRoutes.splash,
-      routes: AppRoutes.routes,
-
     );
   }
 }

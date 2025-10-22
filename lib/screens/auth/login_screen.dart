@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../config/app_routes.dart';
-import '../../data/mock_data.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:myapp/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,86 +11,75 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  String correo = '', password = '';
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
-  bool get isComplete => correo.isNotEmpty && password.isNotEmpty;
-
-  void _login() {
-    final ok = MockDataService.login(correo, password);
-    if (ok) {
-      Navigator.pushReplacementNamed(context, AppRoutes.changePassword);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Correo o contraseña incorrectos')),
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final success = await authService.login(
+        _usernameController.text,
+        _passwordController.text,
       );
+      setState(() {
+        _isLoading = false;
+      });
+      if (success) {
+        context.go('/home');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid credentials')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 40),
-        child: Column(
-          children: [
-            const Text(
-              'Iniciar sesión',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            buildTextField(
-              'Correo electrónico',
-              'Ingrese su correo',
-              (v) => correo = v,
-            ),
-            buildTextField(
-              'Contraseña',
-              'Ingrese su contraseña',
-              (v) => password = v,
-              isPassword: true,
-            ),
-            const SizedBox(height: 40),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isComplete ? Colors.blue : Colors.grey,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 40,
-                  vertical: 14,
-                ),
+      appBar: AppBar(title: const Text('Login')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _usernameController,
+                decoration: const InputDecoration(labelText: 'Username'),
+                validator: (value) =>
+                    value!.isEmpty ? 'Please enter a username' : null,
               ),
-              onPressed: isComplete ? _login : null,
-              child: const Text('Iniciar sesión'),
-            ),
-            const SizedBox(height: 10),
-            GestureDetector(
-              onTap: () => Navigator.pushNamed(context, AppRoutes.register),
-              child: const Text(
-                '¿No tienes cuenta? Regístrate',
-                style: TextStyle(color: Colors.blue),
+              TextFormField(
+                controller: _passwordController,
+                decoration: const InputDecoration(labelText: 'Password'),
+                obscureText: true,
+                validator: (value) =>
+                    value!.isEmpty ? 'Please enter a password' : null,
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: _login,
+                      child: const Text('Login'),
+                    ),
+              TextButton(
+                onPressed: () => context.go('/register'),
+                child: const Text('Don\'t have an account? Register'),
+              ),
+              TextButton(
+                onPressed: () => context.go('/recover-password'),
+                child: const Text('Forgot your password?'),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget buildTextField(
-    String label,
-    String hint,
-    Function(String) onChanged, {
-    bool isPassword = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: TextFormField(
-        onChanged: (v) => setState(() => onChanged(v)),
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: hint,
-          border: const OutlineInputBorder(),
-        ),
-        obscureText: isPassword,
       ),
     );
   }

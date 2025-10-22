@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
-import '../../data/mock_data.dart';
-import '../../config/app_routes.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:myapp/services/auth_service.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final user = usuarioActual;
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final user = authService.user;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Stock Point'),
+        title: const Text('Home'),
         actions: [
           IconButton(
-            onPressed: () {
-              MockDataService.cerrarSesion();
-              Navigator.pushReplacementNamed(context, AppRoutes.login);
-            },
             icon: const Icon(Icons.logout),
+            onPressed: () {
+              authService.logout();
+              context.go('/login');
+            },
           ),
         ],
       ),
       body: Center(
         child: Text(
-          user != null
-              ? 'Bienvenido, ${user.nombre} (${user.rol})'
-              : 'Sin sesión activa',
+          'Welcome, ${user != null ? user.nombre : 'Guest'}!',
           style: const TextStyle(fontSize: 20),
         ),
       ),
