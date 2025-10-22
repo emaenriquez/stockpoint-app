@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/app_routes.dart';
+import '../../data/mock_data.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -9,7 +10,6 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _formKey = GlobalKey<FormState>();
   String nombre = '', correo = '', password = '', confirmPassword = '';
 
   bool get isComplete =>
@@ -18,69 +18,55 @@ class _RegisterScreenState extends State<RegisterScreen> {
       password.isNotEmpty &&
       confirmPassword.isNotEmpty;
 
+  void _registrar() {
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Las contraseñas no coinciden')),
+      );
+      return;
+    }
+    final ok = MockDataService.registrar(nombre, correo, password);
+    if (ok) {
+      Navigator.pushReplacementNamed(context, AppRoutes.login);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('El correo ya está registrado')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 40),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Text(
               'Registro',
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
+            buildTextField('Nombre', 'Ingrese su nombre', (v) => nombre = v),
+            buildTextField('Correo', 'Ingrese su correo', (v) => correo = v),
+            buildTextField(
+              'Contraseña',
+              'Ingrese su contraseña',
+              (v) => password = v,
+              isPassword: true,
+            ),
+            buildTextField(
+              'Confirmar contraseña',
+              'Confirme su contraseña',
+              (v) => confirmPassword = v,
+              isPassword: true,
+            ),
             const SizedBox(height: 20),
-            Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  buildTextField(
-                    'Nombre',
-                    'Ingrese su nombre',
-                    (v) => nombre = v,
-                  ),
-                  buildTextField(
-                    'Correo electrónico',
-                    'Ingrese su correo',
-                    (v) => correo = v,
-                  ),
-                  buildTextField(
-                    'Contraseña',
-                    'Ingrese su contraseña',
-                    (v) => password = v,
-                    isPassword: true,
-                  ),
-                  buildTextField(
-                    'Confirmar contraseña',
-                    'Confirme su contraseña',
-                    (v) => confirmPassword = v,
-                    isPassword: true,
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isComplete ? Colors.blue : Colors.grey,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 40,
-                        vertical: 14,
-                      ),
-                    ),
-                    onPressed: isComplete
-                        ? () => Navigator.pushNamed(context, AppRoutes.login)
-                        : null,
-                    child: const Text('Registrarse'),
-                  ),
-                  const SizedBox(height: 10),
-                  GestureDetector(
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.login),
-                    child: const Text(
-                      '¿Ya tienes cuenta? Inicia sesión',
-                      style: TextStyle(color: Colors.blue),
-                    ),
-                  ),
-                ],
+            ElevatedButton(
+              onPressed: isComplete ? _registrar : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isComplete ? Colors.blue : Colors.grey,
               ),
+              child: const Text('Registrarse'),
             ),
           ],
         ),

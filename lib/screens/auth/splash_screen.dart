@@ -12,10 +12,8 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-
-    // Espera 5 segundos y navega a la pantalla de registro
-    Future.delayed(const Duration(seconds: 5), () {
-      Navigator.pushReplacementNamed(context, AppRoutes.register);
+    Future.delayed(const Duration(seconds: 3), () {
+      Navigator.pushReplacementNamed(context, AppRoutes.login);
     });
   }
 
@@ -25,7 +23,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Center(
         child: Text(
           'Stock Point',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
         ),
       ),
     );
