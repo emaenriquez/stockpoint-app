@@ -1,107 +1,66 @@
 import 'package:flutter/material.dart';
-import 'package:stockpoint_app/data/mock_data_service.dart';
-import 'package:stockpoint_app/widgets/distribuidor_header.dart';
-import 'package:stockpoint_app/config/app_routes.dart';
+import '../../data/mock_data_service.dart';
+import '../../models/detalle_pedido.dart';
 
-class ProductosAgregadosScreen extends StatelessWidget {
-  const ProductosAgregadosScreen({Key? key}) : super(key: key);
+class ProductosAgregadosScreen extends StatefulWidget {
+  const ProductosAgregadosScreen({super.key});
 
   @override
+  State<ProductosAgregadosScreen> createState() =>
+      _ProductosAgregadosScreenState();
+}
+
+class _ProductosAgregadosScreenState extends State<ProductosAgregadosScreen> {
+  @override
   Widget build(BuildContext context) {
+    final productosAgregados = MockDataService.productosAgregados;
+
     return Scaffold(
-      appBar: const DistribuidorHeader(titulo: 'Panel de Distribuidor'),
-      body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          children: [
-            const Text(
-              'Productos Seleccionados',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+      appBar: AppBar(
+        title: const Text('Productos Agregados'),
+        actions: [
+          if (MockDataService.usuarioActual != null)
+            CircleAvatar(
+              backgroundImage: AssetImage(MockDataService.usuarioActual!.foto),
             ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                itemCount: MockDataService.productosAgregados.length,
-                itemBuilder: (context, index) {
-                  final detalle = MockDataService.productosAgregados[index];
-                  return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        children: [
-                          Image.network(
-                            detalle.producto.foto,
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  detalle.producto.nombre,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  '\$${detalle.producto.precio.toStringAsFixed(2)}',
-                                  style: const TextStyle(
-                                    color: Colors.blue,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                Text(
-                                  'Cantidad: ${detalle.cantidad}',
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      backgroundColor: Colors.grey,
-                    ),
-                    child: const Text('Editar'),
+          const SizedBox(width: 16),
+        ],
+      ),
+      body: productosAgregados.isEmpty
+          ? const Center(child: Text('No hay productos agregados.'))
+          : ListView.builder(
+              padding: const EdgeInsets.all(12),
+              itemCount: productosAgregados.length,
+              itemBuilder: (context, index) {
+                final DetallePedido detalle = productosAgregados[index];
+                return ListTile(
+                  title: Text(detalle.producto.nombre),
+                  subtitle: Text(
+                    'Cantidad: ${detalle.cantidad}  |  Subtotal: \$${detalle.subtotal.toStringAsFixed(2)}',
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
                     onPressed: () {
-                      Navigator.pushNamed(context, AppRoutes.resumenPedido);
+                      setState(() {
+                        MockDataService.actualizarCantidad(
+                        detalle.producto.id,
+                          0,
+                        );
+                      });
                     },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      backgroundColor: Colors.blue,
-                    ),
-                    child: const Text('Continuar'),
                   ),
-                ),
-              ],
+                );
+              },
             ),
-          ],
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.all(16),
+        child: Text(
+          'Total: \$${MockDataService.calcularTotal().toStringAsFixed(2)}',
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
       ),
     );

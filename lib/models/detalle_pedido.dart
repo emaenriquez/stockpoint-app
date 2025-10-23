@@ -3,7 +3,7 @@ import 'producto.dart';
 class DetallePedido {
   final int id;
   final Producto producto;
-  final int cantidad;
+  int cantidad;
   final double subtotal;
 
   DetallePedido({

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:stockpoint_app/data/mock_data_service.dart';
+import '../../data/mock_data_service.dart';
 
 class DistribuidorHeader extends StatelessWidget implements PreferredSizeWidget {
   final String titulo;

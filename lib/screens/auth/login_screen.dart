@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/services/auth_service.dart';
+import '../../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,7 +11,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
@@ -23,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
       });
       final authService = Provider.of<AuthService>(context, listen: false);
       final success = await authService.login(
-        _usernameController.text,
+        _emailController.text,
         _passwordController.text,
       );
       setState(() {
@@ -32,9 +32,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (success) {
         context.go('/home');
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid credentials')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Invalid credentials')));
       }
     }
   }
@@ -50,10 +50,10 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             children: [
               TextFormField(
-                controller: _usernameController,
-                decoration: const InputDecoration(labelText: 'Username'),
+                controller: _emailController,
+                decoration: const InputDecoration(labelText: 'Email'),
                 validator: (value) =>
-                    value!.isEmpty ? 'Please enter a username' : null,
+                    value!.isEmpty ? 'Please enter an email' : null,
               ),
               TextFormField(
                 controller: _passwordController,
