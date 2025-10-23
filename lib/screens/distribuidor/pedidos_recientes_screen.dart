@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../data/mock_data_service.dart';
 import '../../models/pedido.dart';
+import '../../services/auth_service.dart';
 
 class PedidosRecientesScreen extends StatelessWidget {
   const PedidosRecientesScreen({super.key});
@@ -8,16 +11,41 @@ class PedidosRecientesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pedidos = MockDataService.pedidos;
+    final authService = Provider.of<AuthService>(context);
+    final user = authService.user;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pedidos Recientes'),
+        automaticallyImplyLeading: false,
         actions: [
-          if (MockDataService.usuarioActual != null)
-            CircleAvatar(
-              backgroundImage: AssetImage(MockDataService.usuarioActual!.foto),
+          if (user != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: CircleAvatar(
+                backgroundImage: AssetImage(user.foto),
+              ),
             ),
-          const SizedBox(width: 16),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'logout') {
+                authService.logout();
+                context.go('/login');
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout),
+                    SizedBox(width: 8),
+                    Text('Cerrar Sesión'),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
       body: pedidos.isEmpty
@@ -42,9 +70,47 @@ class PedidosRecientesScreen extends StatelessWidget {
                 );
               },
             ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: 0, // Pedidos Recientes está seleccionado
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              // Ya estamos en Pedidos Recientes
+              break;
+            case 1:
+              context.go('/distribuidor/buscar-clientes');
+              break;
+            case 2:
+              context.go('/distribuidor/buscar-productos');
+              break;
+            case 3:
+              context.go('/distribuidor/productos-agregados');
+              break;
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt_long),
+            label: 'Pedidos',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: 'Clientes',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.inventory),
+            label: 'Productos',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Carrito',
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // Acción para crear nuevo pedido
+          context.go('/distribuidor/buscar-clientes');
         },
         label: const Text('Nuevo Pedido'),
         icon: const Icon(Icons.add),

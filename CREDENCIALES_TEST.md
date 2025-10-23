@@ -6,7 +6,13 @@
 - **Email:** `juan@stockpoint.com`
 - **Contraseña:** `123456`
 - **Rol:** distribuidor
-- **Navegación:** Después del login, redirige automáticamente a "Pedidos Recientes"
+- **Navegación:** Después del login, redirige automáticamente a `/distribuidor/pedidos-recientes`
+- **Funcionalidades disponibles:**
+  - Ver pedidos recientes
+  - Buscar clientes
+  - Buscar productos
+  - Ver productos agregados al carrito
+  - Crear nuevos pedidos
 
 ### Administrador
 - **Email:** `admin@stockpoint.com`
