@@ -33,10 +33,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _isLoading = false;
       });
       if (success) {
-        context.go('/home');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registro exitoso. Ahora puede iniciar sesión.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        context.go('/login');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Email already exists')),
+          const SnackBar(
+            content: Text('El correo electrónico ya existe'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }

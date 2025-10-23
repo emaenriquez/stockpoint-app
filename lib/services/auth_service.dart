@@ -1,34 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/data/mock_data.dart';
+import 'package:myapp/data/mock_data_service.dart';
 import 'package:myapp/models/usuario.dart';
-
-class MockDataService {
-  static List<Usuario> usuarios = [
-    Usuario(
-      id: 1,
-      nombre: 'Juan Pérez',
-      correo: 'juan@mail.com',
-      contrasena: '1234',
-      rol: 'distribuidor',
-      foto: 'assets/avatar_distribuidor.png',
-    ),
-    // más usuarios...
-  ];
-
-  static Usuario? usuarioActual;
-
-  static void cerrarSesion() {
-    usuarioActual = null;
-  }
-
-  static bool cambiarContrasena(String nuevaContrasena) {
-    if (usuarioActual != null) {
-      usuarioActual!.contrasena = nuevaContrasena;
-      return true;
-    }
-    return false;
-  }
-}
 
 class AuthService with ChangeNotifier {
   Usuario? _user;
@@ -38,39 +10,26 @@ class AuthService with ChangeNotifier {
   bool get isAuthenticated => _user != null;
 
   Future<bool> login(String correo, String contrasena) async {
-    try {
-      final user = MockDataService.usuarios.firstWhere(
-        (u) => u.correo == correo && u.contrasena == contrasena,
-      );
-      _user = user;
-      MockDataService.usuarioActual = user;
+    final success = MockDataService.login(correo, contrasena);
+    if (success) {
+      _user = MockDataService.usuarioActual;
       notifyListeners();
       return true;
-    } catch (e) {
-      return false;
     }
+    return false;
   }
 
   Future<bool> register(String nombre, String correo, String contrasena) async {
-    // Validar si ya existe el usuario
-    if (MockDataService.usuarios.any((u) => u.correo == correo)) {
-      return false;
+    final success = MockDataService.registrar(nombre, correo, contrasena);
+    if (success) {
+      // Don't set _user here - we want to redirect to login
+      // Clear the current user after registration
+      MockDataService.cerrarSesion();
+      _user = null;
+      notifyListeners();
+      return true;
     }
-
-    final nuevo = Usuario(
-      id: MockDataService.usuarios.length + 1,
-      nombre: nombre,
-      correo: correo,
-      contrasena: contrasena,
-      rol: 'distribuidor',
-      foto: 'assets/avatar_distribuidor.png',
-    );
-
-    MockDataService.usuarios.add(nuevo);
-    _user = nuevo;
-    MockDataService.usuarioActual = nuevo;
-    notifyListeners();
-    return true;
+    return false;
   }
 
   void logout() {
@@ -96,9 +55,8 @@ class AuthService with ChangeNotifier {
       final user = MockDataService.usuarios.firstWhere(
         (u) => u.correo == correo,
       );
-      _user = user;
-      MockDataService.usuarioActual = user;
-      notifyListeners();
+      // For password recovery, we don't automatically log in the user
+      // Just return true if the email exists
       return true;
     } catch (e) {
       return false;

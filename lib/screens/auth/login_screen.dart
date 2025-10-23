@@ -30,11 +30,20 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = false;
       });
       if (success) {
-        context.go('/home');
+        // Navigate based on user role
+        final user = authService.user;
+        if (user != null && user.rol == 'distribuidor') {
+          context.go('/distribuidor/pedidos-recientes');
+        } else {
+          context.go('/home');
+        }
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Invalid credentials')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Credenciales inválidas. Verifique su email y contraseña.'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }

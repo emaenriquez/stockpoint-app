@@ -72,12 +72,18 @@ class AppRoutes {
             state.matchedLocation == '/recover-password' ||
             state.matchedLocation == '/change-password';
 
-        if (!isAuthenticated && !isAuthRoute) {
-          return '/';
+        if (!isAuthenticated && !isAuthRoute && state.matchedLocation != '/') {
+          return '/login';
         }
 
         if (isAuthenticated && isAuthRoute) {
-          return '/home';
+          // Redirect based on user role
+          final user = authService.user;
+          if (user != null && user.rol == 'distribuidor') {
+            return '/distribuidor/pedidos-recientes';
+          } else {
+            return '/home';
+          }
         }
 
         return null;
