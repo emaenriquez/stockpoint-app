@@ -21,7 +21,13 @@ class _SplashScreenState extends State<SplashScreen> {
     final authService = Provider.of<AuthService>(context, listen: false);
     await Future.delayed(const Duration(seconds: 2));
     if (authService.isAuthenticated) {
-      context.go('/home');
+      // Navigate based on user role
+      final user = authService.user;
+      if (user != null && user.rol == 'distribuidor') {
+        context.go('/distribuidor/pedidos-recientes');
+      } else {
+        context.go('/home');
+      }
     } else {
       context.go('/login');
     }
